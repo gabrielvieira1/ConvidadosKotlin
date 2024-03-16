@@ -10,7 +10,7 @@ import com.convidadoskotlin.service.repository.GuestRepository
 class GuestFormViewModel(application: Application) : AndroidViewModel(application) {
 
     // Acesso a dados
-    private val repository = GuestRepository.getInstance(application.applicationContext)
+    private val guestRepository: GuestRepository = GuestRepository(application.applicationContext)
 
     private var _saveGuest = MutableLiveData<Boolean>()
     val saveGuest: LiveData<Boolean> = _saveGuest
@@ -22,12 +22,16 @@ class GuestFormViewModel(application: Application) : AndroidViewModel(applicatio
      * Salva convidado
      * */
     fun save(id: Int, name: String, presence: Boolean) {
-        val guest = GuestModel(id, name, presence)
+        val guest = GuestModel().apply {
+            this.id = id
+            this.name = name
+            this.presence = presence
+        }
 
         if (id == 0) {
-            _saveGuest.value = repository.save(guest)
+            _saveGuest.value = guestRepository.save(guest)
         } else {
-            _saveGuest.value = repository.update(guest)
+            _saveGuest.value = guestRepository.update(guest)
         }
     }
 
@@ -35,7 +39,7 @@ class GuestFormViewModel(application: Application) : AndroidViewModel(applicatio
      * Carrega convidado
      * */
     fun load(id: Int) {
-        _guest.value = repository.get(id)
+        _guest.value = guestRepository.get(id)
     }
 
 }

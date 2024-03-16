@@ -16,25 +16,33 @@ import com.convidadoskotlin.viewmodel.GuestsViewModel
 
 class AbsentFragment : Fragment() {
 
-    private var _binding: FragmentAbsentBinding? = null
-    private val binding get() = _binding!!
-
     private lateinit var viewModel: GuestsViewModel
-    private val adapter = GuestAdapter()
+    private val adapter: GuestAdapter = GuestAdapter()
+    private lateinit var listener: GuestListener
+    private var _binding: FragmentAbsentBinding? = null
+
+    // Propriedade somente válida entre onCreateView e onDestroyView.
+    private val binding get() = _binding!!
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, b: Bundle?): View {
 
         viewModel = ViewModelProvider(this).get(GuestsViewModel::class.java)
         _binding = FragmentAbsentBinding.inflate(inflater, container, false)
+        val root: View = binding.root
+
+        // Elemento de interface - RecyclerView
+        // Não é possível deixar o Kotlin fazer o mapeamento, pois a fragment ainda não está totalmente criada
+        // Assim, precisamos buscar o elemento através de findViewById
+        val recycler = binding.recyclerAbsents
 
         // Atribui um layout que diz como a RecyclerView se comporta
-        binding.recyclerAbsents.layoutManager = LinearLayoutManager(context)
+        recycler.layoutManager = LinearLayoutManager(context)
 
-        // Define um adapater - Faz a ligação da RecyclerView com a listagem de itens
-        binding.recyclerAbsents.adapter = adapter
+        // Defini um adapater - Faz a ligação da RecyclerView com a listagem de itens
+        recycler.adapter = adapter
 
         // Cria comportamento quando item for clicado
-        val listener = object : GuestListener {
+        listener = object : GuestListener {
             override fun onClick(id: Int) {
                 // Intenção
                 val intent = Intent(context, GuestFormActivity::class.java)
@@ -52,7 +60,7 @@ class AbsentFragment : Fragment() {
 
             override fun onDelete(id: Int) {
                 viewModel.delete(id)
-                viewModel.getAbsent()
+                viewModel.load(GuestConstants.FILTER.ABSENT)
             }
         }
 
@@ -60,7 +68,7 @@ class AbsentFragment : Fragment() {
         observe()
 
         adapter.attachListener(listener)
-        return binding.root
+        return root
     }
 
     /**
@@ -68,7 +76,7 @@ class AbsentFragment : Fragment() {
      */
     override fun onResume() {
         super.onResume()
-        viewModel.getAbsent()
+        viewModel.load(GuestConstants.FILTER.ABSENT)
     }
 
     override fun onDestroyView() {

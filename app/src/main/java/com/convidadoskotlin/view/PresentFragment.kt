@@ -16,22 +16,30 @@ import com.convidadoskotlin.viewmodel.GuestsViewModel
 
 class PresentFragment : Fragment() {
 
+    private lateinit var viewModel: GuestsViewModel
     private var _binding: FragmentPresentBinding? = null
+    private val adapter: GuestAdapter = GuestAdapter()
+    private lateinit var listener: GuestListener
+
+    // This property is only valid between onCreateView and onDestroyView.
     private val binding get() = _binding!!
 
-    private lateinit var viewModel: GuestsViewModel
-    private val adapter = GuestAdapter()
+    override fun onCreateView(
+        inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
+    ): View {
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, b: Bundle?): View {
-
+        // Instâncias da classe
         viewModel = ViewModelProvider(this).get(GuestsViewModel::class.java)
         _binding = FragmentPresentBinding.inflate(inflater, container, false)
+        val root: View = binding.root
 
-        binding.recyclerPresents.layoutManager = LinearLayoutManager(context)
-        binding.recyclerPresents.adapter = adapter
+        // RecyclerView
+        val recycler = binding.recyclerPresents
+        recycler.layoutManager = LinearLayoutManager(context)
+        recycler.adapter = adapter
 
         // Listener
-        val listener = object : GuestListener {
+        listener = object : GuestListener {
             override fun onClick(id: Int) {
                 val intent = Intent(context, GuestFormActivity::class.java)
 
@@ -44,7 +52,7 @@ class PresentFragment : Fragment() {
 
             override fun onDelete(id: Int) {
                 viewModel.delete(id)
-                viewModel.getPresent()
+                viewModel.load(GuestConstants.FILTER.PRESENT)
             }
         }
 
@@ -52,12 +60,12 @@ class PresentFragment : Fragment() {
         observe()
 
         adapter.attachListener(listener)
-        return binding.root
+        return root
     }
 
     override fun onResume() {
         super.onResume()
-        viewModel.getPresent()
+        viewModel.load(GuestConstants.FILTER.PRESENT)
     }
 
     override fun onDestroyView() {

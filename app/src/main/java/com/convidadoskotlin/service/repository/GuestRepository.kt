@@ -1,11 +1,65 @@
 package com.convidadoskotlin.service.repository
 
-import android.content.ContentValues
 import android.content.Context
-import com.convidadoskotlin.service.constants.DataBaseConstants
 import com.convidadoskotlin.service.model.GuestModel
-import java.lang.Exception
-import java.util.ArrayList
+
+class GuestRepository (context: Context) {
+
+    // Acesso ao banco de dados
+    private val dataBase = GuestDatabase.getDatabase(context).guestDAO()
+
+    /**
+     * Carrega convidado
+     */
+    fun get(id: Int): GuestModel {
+        return dataBase.load(id)
+    }
+
+    /**
+     * Insere convidado
+     */
+    fun save(guest: GuestModel): Boolean {
+        return dataBase.save(guest) > 0
+    }
+
+    /**
+     * Faz a listagem de todos os convidados
+     */
+    fun getAll(): List<GuestModel> {
+        return dataBase.getInvited()
+    }
+
+    /**
+     * Faz a listagem de todos os convidados presentes
+     */
+    fun getPresent(): List<GuestModel> {
+        return dataBase.getPresent()
+    }
+
+    /**
+     * Faz a listagem de todos os convidados presentes
+     */
+    fun getAbsent(): List<GuestModel> {
+        return dataBase.getAbsent()
+    }
+
+    /**
+     * Atualiza convidado
+     */
+    fun update(guest: GuestModel): Boolean {
+        return dataBase.update(guest) > 0
+    }
+
+    /**
+     * Remove convidado
+     */
+    fun delete(guest: GuestModel) {
+        dataBase.delete(guest)
+    }
+
+}
+
+/*
 
 class GuestRepository private constructor(context: Context) {
 
@@ -240,3 +294,4 @@ class GuestRepository private constructor(context: Context) {
     }
 
 }
+*/

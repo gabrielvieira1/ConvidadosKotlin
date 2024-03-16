@@ -17,23 +17,33 @@ import com.convidadoskotlin.view.GuestFormActivity
 
 class AllGuestsFragment : Fragment() {
 
-    private var _binding: FragmentAllBinding? = null
-    private val binding get() = _binding!!
-
     private lateinit var viewModel: GuestsViewModel
     private val adapter: GuestAdapter = GuestAdapter()
+    private lateinit var listener: GuestListener
+    private var _binding: FragmentAllBinding? = null
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, b: Bundle?): View {
+    // This property is only valid between onCreateView and
+    // onDestroyView.
+    private val binding get() = _binding!!
+
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, b: Bundle?): View? {
+
         viewModel = ViewModelProvider(this).get(GuestsViewModel::class.java)
         _binding = FragmentAllBinding.inflate(inflater, container, false)
+        val root: View = binding.root
+
+        // Elemento de interface - RecyclerView
+        // Não é possível deixar o Kotlin fazer o mapeamento, pois a fragment ainda não está totalmente criada
+        // Assim, precisamos buscar o elemento através de findViewById
+        val recycler = binding.recyclerAllGuests
 
         // Atribui um layout que diz como a RecyclerView se comporta
-        binding.recyclerAllGuests.layoutManager = LinearLayoutManager(context)
+        recycler.layoutManager = LinearLayoutManager(context)
 
-        // Define um adapater - Faz a ligação da RecyclerView com a listagem de itens
-        binding.recyclerAllGuests.adapter = adapter
+        // Defini um adapater - Faz a ligação da RecyclerView com a listagem de itens
+        recycler.adapter = adapter
 
-        val listener = object : GuestListener {
+        listener = object : GuestListener {
             override fun onClick(id: Int) {
                 val intent = Intent(context, GuestFormActivity::class.java)
 
@@ -46,7 +56,7 @@ class AllGuestsFragment : Fragment() {
 
             override fun onDelete(id: Int) {
                 viewModel.delete(id)
-                viewModel.getAll()
+                viewModel.load(GuestConstants.FILTER.EMPTY)
             }
         }
 
@@ -54,12 +64,12 @@ class AllGuestsFragment : Fragment() {
         observe()
 
         adapter.attachListener(listener)
-        return binding.root
+        return root
     }
 
     override fun onResume() {
         super.onResume()
-        viewModel.getAll()
+        viewModel.load(GuestConstants.FILTER.EMPTY)
     }
 
     override fun onDestroyView() {
